@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  sku         String   @unique
+  category    String
+  price       Decimal
+  stock       Int
+  minStock    Int      @default(5)
+  sizes       String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  SalesItem   SalesItem[]
+}
+
+model Customer {
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String?  @unique
+  phone       String?  @unique
+  location    String?
+  points      Int      @default(0)
+  totalSpent  Decimal  @default(0)
+  lastVisit   DateTime @default(now())
+  sales       Sale[]
+  createdAt   DateTime @default(now())
+}
+
+model Sale {
+  id          Int         @id @default(autoincrement())
+  invoiceNo   String      @unique @default(uuid())
+  totalAmount Decimal
+  taxAmount   Decimal
+  subTotal    Decimal
+  paymentMode String      @default("CASH")
+  customer    Customer?   @relation(fields: [customerId], references: [id])
+  customerId  Int?
+  items       SalesItem[]
+  createdAt   DateTime    @default(now())
+}
+
+model SalesItem {
+  id        Int     @id @default(autoincrement())
+  sale      Sale    @relation(fields: [saleId], references: [id])
+  saleId    Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int
+  price     Decimal
+  size      String?
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String   // Hashed
+  role      String   @default("USER") // ADMIN, USER
+  createdAt DateTime @default(now())
+}
