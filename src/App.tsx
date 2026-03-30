@@ -45,7 +45,7 @@ const AppLayout = () => {
           </header>
           <main className="flex-1 p-6 overflow-auto">
             <Routes>
-              <Route path="/" element={<Index />} />
+              <Route path="/dashboard" element={<Index />} />
               <Route path="/pos" element={<PointOfSale />} />
               <Route path="/inventory" element={<Inventory />} />
               <Route path="/customers" element={<Customers />} />
@@ -68,6 +68,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/*" element={
               <ProtectedRoute>

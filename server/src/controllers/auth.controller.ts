@@ -5,7 +5,6 @@ import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
-const COOKIE_NAME = 'auth_token';
 
 export const getRSAPublicKey = (req: Request, res: Response) => {
     res.json({ publicKey: 'RSA_DEPRECATED' });
@@ -19,37 +18,25 @@ export const login = async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'Missing credentials' });
         }
 
-        // Find user
         const user = await prisma.user.findUnique({ where: { username } });
         if (!user) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        // Verify password with bcrypt (the REAL security layer)
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        // Generate JWT
         const token = jwt.sign(
             { userId: user.id, username: user.username, role: user.role },
             JWT_SECRET,
             { expiresIn: '1d' }
         );
 
-        // Set HttpOnly Cookie (still works for local development)
-        res.cookie(COOKIE_NAME, token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 24 * 60 * 60 * 1000
-        });
-
-        // CHANGED: Also return token in response body (for deployed frontend)
         res.json({
             message: 'Login successful',
-            token,  // ← ADD THIS LINE
+            token,
             user: { id: user.id, username: user.username, role: user.role }
         });
 
@@ -61,14 +48,12 @@ export const login = async (req: Request, res: Response) => {
 
 export const register = async (req: Request, res: Response) => {
     try {
-        // Check if requester is admin (Middleware should handle this)
         const { username, password, role } = req.body;
 
         if (!username || !password) {
             return res.status(400).json({ error: 'Username and password required' });
         }
 
-        // Hash password with bcrypt
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const user = await prisma.user.create({
@@ -93,7 +78,6 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const logout = (req: Request, res: Response) => {
-    res.clearCookie(COOKIE_NAME);
     res.json({ message: 'Logged out' });
 };
 
@@ -105,4 +89,4 @@ export const me = (req: Request, res: Response) => {
     } else {
         res.status(401).json({ error: 'Not authenticated' });
     }
-}
+};

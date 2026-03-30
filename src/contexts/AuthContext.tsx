@@ -30,7 +30,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const checkAuth = async () => {
         try {
-            // Only try to verify if we have a token stored
             const token = getAuthToken();
             if (!token) {
                 setUser(null);
@@ -41,7 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setUser(data.user);
         } catch (error) {
             setUser(null);
-            setAuthToken(null); // Clear invalid token
+            setAuthToken(null);
         } finally {
             setIsLoading(false);
         }
@@ -51,7 +50,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
             const data = await api.login(loginData);
             setUser(data.user);
-            navigate('/');
+            navigate('/dashboard');
         } catch (error) {
             throw error;
         }

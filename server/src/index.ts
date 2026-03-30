@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import cookieParser from 'cookie-parser';
 
 import productRoutes from './routes/product.routes';
 import customerRoutes from './routes/customer.routes';
@@ -19,7 +18,6 @@ app.use(cors({
     origin: process.env.FRONTEND_URL || 'http://localhost:8080',
     credentials: true
 }));
-app.use(cookieParser());
 app.use(express.json());
 
 app.get('/', (req, res) => {

@@ -5,9 +5,11 @@ import {
   Users, 
   BarChart3, 
   Settings,
-  Store
+  Store,
+  LogOut
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
+import { useAuth } from "@/contexts/AuthContext"
 
 import {
   Sidebar,
@@ -19,11 +21,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
+  SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar"
 
 const navigation = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Point of Sale", url: "/pos", icon: ShoppingCart },
   { title: "Inventory", url: "/inventory", icon: Package },
   { title: "Customers", url: "/customers", icon: Users },
@@ -34,6 +37,7 @@ const navigation = [
 export function AppSidebar() {
   const { state } = useSidebar()
   const location = useLocation()
+  const { logout, user } = useAuth()
   const currentPath = location.pathname
   const collapsed = state === "collapsed"
 
@@ -78,6 +82,25 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="border-t p-4">
+        {!collapsed && user && (
+          <p className="text-xs text-muted-foreground mb-2 truncate">
+            Signed in as <span className="font-medium text-sidebar-foreground">{user.username}</span>
+          </p>
+        )}
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={logout}
+              className="hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+            >
+              <LogOut className="h-4 w-4" />
+              {!collapsed && <span>Logout</span>}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   )
 }
