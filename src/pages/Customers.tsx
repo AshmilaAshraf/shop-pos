@@ -21,7 +21,9 @@ export default function Customers() {
     name: "",
     email: "",
     phone: "",
-    location: ""
+    location: "",
+    address: "",
+    gstNumber: ""
   })
 
   const fetchCustomers = async () => {
@@ -50,7 +52,7 @@ export default function Customers() {
       await api.createCustomer(newCustomer)
       toast.success("Customer added successfully")
       setIsAddOpen(false)
-      setNewCustomer({ name: "", email: "", phone: "", location: "" })
+      setNewCustomer({ name: "", email: "", phone: "", location: "", address: "", gstNumber: "" })
       fetchCustomers()
     } catch (error) {
       console.error(error)
@@ -97,7 +99,7 @@ export default function Customers() {
                 <p>Add details for a new customer.</p>
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">Name</Label>
                 <Input id="name" value={newCustomer.name} onChange={e => setNewCustomer({ ...newCustomer, name: e.target.value })} className="col-span-3" />
@@ -111,8 +113,16 @@ export default function Customers() {
                 <Input id="email" value={newCustomer.email} onChange={e => setNewCustomer({ ...newCustomer, email: e.target.value })} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="location" className="text-right">Location</Label>
+                <Label htmlFor="location" className="text-right">City/Region</Label>
                 <Input id="location" value={newCustomer.location} onChange={e => setNewCustomer({ ...newCustomer, location: e.target.value })} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="address" className="text-right">Full Address</Label>
+                <Input id="address" value={newCustomer.address} onChange={e => setNewCustomer({ ...newCustomer, address: e.target.value })} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="gstNumber" className="text-right">GST Number</Label>
+                <Input id="gstNumber" placeholder="Optional" value={newCustomer.gstNumber} onChange={e => setNewCustomer({ ...newCustomer, gstNumber: e.target.value })} className="col-span-3" />
               </div>
             </div>
             <DialogFooter>
@@ -209,11 +219,17 @@ export default function Customers() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <MapPin className="h-3 w-3" />
-                        {customer.location || '-'}
+                        <MapPin className="h-3 w-3 flex-shrink-0" />
+                        <div>
+                          <div>{customer.location || '-'}</div>
+                          <div className="text-xs text-muted-foreground whitespace-normal max-w-[150px]">{customer.address || ''}</div>
+                        </div>
                       </div>
                     </TableCell>
-                    <TableCell>{customer.points || 0}</TableCell>
+                    <TableCell>
+                      <div>{customer.points || 0}</div>
+                      <div className="text-xs text-muted-foreground">{customer.gstNumber || ''}</div>
+                    </TableCell>
                     <TableCell>₹{Number(customer.totalSpent).toLocaleString()}</TableCell>
                     <TableCell>{getStatusBadge(Number(customer.totalSpent))}</TableCell>
                   </TableRow>

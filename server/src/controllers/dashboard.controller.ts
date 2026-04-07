@@ -7,17 +7,19 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     try {
         const [
             totalProducts,
-            lowStockCount,
             totalCustomers,
-            salesResult
+            salesResult,
+            products
         ] = await Promise.all([
             prisma.product.count(),
-            prisma.product.count({ where: { stock: { lte: prisma.product.fields.minStock } } }),
             prisma.customer.count(),
             prisma.sale.aggregate({
                 _sum: { totalAmount: true }
-            })
+            }),
+            prisma.product.findMany({ select: { stock: true, minStock: true } })
         ]);
+
+        const lowStockCount = products.filter(p => p.stock <= p.minStock).length;
 
         const totalRevenue = salesResult._sum.totalAmount || 0;
 

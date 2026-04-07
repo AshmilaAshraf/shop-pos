@@ -19,8 +19,11 @@ export default function Inventory() {
   const [newProduct, setNewProduct] = useState({
     name: "",
     sku: "",
+    barcode: "",
     category: "",
     price: "",
+    discount: "0",
+    taxSlab: "18",
     stock: "",
     minStock: "5",
     sizes: ""
@@ -52,6 +55,8 @@ export default function Inventory() {
       const payload = {
         ...newProduct,
         price: Number(newProduct.price),
+        discount: Number(newProduct.discount),
+        taxSlab: Number(newProduct.taxSlab),
         stock: Number(newProduct.stock),
         minStock: Number(newProduct.minStock),
         sizes: newProduct.sizes.split(',').map(s => s.trim()).filter(Boolean)
@@ -60,7 +65,7 @@ export default function Inventory() {
       await api.createProduct(payload)
       toast.success("Product added successfully")
       setIsAddOpen(false)
-      setNewProduct({ name: "", sku: "", category: "", price: "", stock: "", minStock: "5", sizes: "" })
+      setNewProduct({ name: "", sku: "", barcode: "", category: "", price: "", discount: "0", taxSlab: "18", stock: "", minStock: "5", sizes: "" })
       fetchProducts()
     } catch (error) {
       console.error(error)
@@ -111,7 +116,7 @@ export default function Inventory() {
                 Add a new item to your inventory here.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">Name</Label>
                 <Input id="name" value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} className="col-span-3" />
@@ -121,12 +126,24 @@ export default function Inventory() {
                 <Input id="sku" value={newProduct.sku} onChange={e => setNewProduct({ ...newProduct, sku: e.target.value })} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="barcode" className="text-right">Barcode</Label>
+                <Input id="barcode" placeholder="Optional" value={newProduct.barcode} onChange={e => setNewProduct({ ...newProduct, barcode: e.target.value })} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="category" className="text-right">Category</Label>
                 <Input id="category" value={newProduct.category} onChange={e => setNewProduct({ ...newProduct, category: e.target.value })} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="price" className="text-right">Price</Label>
                 <Input id="price" type="number" value={newProduct.price} onChange={e => setNewProduct({ ...newProduct, price: e.target.value })} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="discount" className="text-right">Discount (Flat)</Label>
+                <Input id="discount" type="number" value={newProduct.discount} onChange={e => setNewProduct({ ...newProduct, discount: e.target.value })} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="taxSlab" className="text-right">Tax Slab (%)</Label>
+                <Input id="taxSlab" type="number" value={newProduct.taxSlab} onChange={e => setNewProduct({ ...newProduct, taxSlab: e.target.value })} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="stock" className="text-right">Stock</Label>
@@ -187,17 +204,18 @@ export default function Inventory() {
             <TableHeader>
               <TableRow>
                 <TableHead>Product</TableHead>
-                <TableHead>SKU</TableHead>
+                <TableHead>SKU/Barcode</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Stock</TableHead>
                 <TableHead>Price</TableHead>
+                <TableHead>Tax/Disc.</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {products.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-10">
+                  <TableCell colSpan={7} className="text-center py-10">
                     No products found. Add some!
                   </TableCell>
                 </TableRow>
@@ -205,10 +223,17 @@ export default function Inventory() {
                 products.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell>{item.sku}</TableCell>
+                    <TableCell>
+                      <div>{item.sku}</div>
+                      <div className="text-xs text-muted-foreground">{item.barcode || '-'}</div>
+                    </TableCell>
                     <TableCell>{item.category}</TableCell>
                     <TableCell>{item.stock} pcs</TableCell>
                     <TableCell>₹{Number(item.price).toFixed(2)}</TableCell>
+                    <TableCell className="text-xs">
+                       <div>{item.taxSlab}% Tax</div>
+                       <div className="text-destructive">₹{Number(item.discount || 0)} Off</div>
+                    </TableCell>
                     <TableCell>{getStatusBadge(item.stock, item.minStock)}</TableCell>
                   </TableRow>
                 ))

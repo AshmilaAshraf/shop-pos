@@ -33,6 +33,8 @@ interface CartItem {
   price: number
   quantity: number
   size?: string
+  discount: number
+  taxSlab: number
 }
 
 const PointOfSale = () => {
@@ -83,7 +85,9 @@ const PointOfSale = () => {
         name: product.name,
         price: Number(product.price),
         quantity: 1,
-        size
+        size,
+        discount: Number(product.discount || 0),
+        taxSlab: Number(product.taxSlab || 0)
       }])
     }
   }
@@ -119,12 +123,14 @@ const PointOfSale = () => {
 
     try {
       const payload = {
-        customerId: selectedCustomerId,
+        customerId: selectedCustomerId !== "guest" ? selectedCustomerId : null,
         items: cart.map(item => ({
           productId: item.id,
           quantity: item.quantity,
           price: item.price,
-          size: item.size
+          size: item.size,
+          discount: item.discount,
+          taxSlab: item.taxSlab
         })),
         paymentMode: "CASH" // Default for now
       }
@@ -142,9 +148,23 @@ const PointOfSale = () => {
     }
   }
 
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-  const tax = subtotal * 0.18 // 18% GST
-  const total = subtotal + tax
+  // Calculate equivalent live UI logic
+  let subtotal = 0;
+  let tax = 0;
+  let totalDiscount = 0;
+  
+  cart.forEach(item => {
+      const grossLine = item.price * item.quantity;
+      const lineDisc = item.discount * item.quantity;
+      const netLine = grossLine - lineDisc;
+      const lineTax = (netLine * item.taxSlab) / 100;
+      
+      subtotal += netLine;
+      tax += lineTax;
+      totalDiscount += lineDisc;
+  });
+  
+  const total = subtotal + tax;
 
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -152,7 +172,7 @@ const PointOfSale = () => {
   )
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-6rem)]">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start pb-10">
       {/* Product Selection */}
       <div className="lg:col-span-2 space-y-4">
         <div className="flex items-center gap-4">
@@ -203,7 +223,7 @@ const PointOfSale = () => {
         </Card>
 
         {/* Product Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto max-h-[500px]">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredProducts.map((product) => (
             <Card key={product.id} className="bg-gradient-card shadow-soft hover:shadow-medium transition-shadow cursor-pointer">
               <CardContent className="p-4">
@@ -236,7 +256,7 @@ const PointOfSale = () => {
       </div>
 
       {/* Cart & Checkout */}
-      <div className="space-y-4">
+      <div className="space-y-4 sticky top-0">
         <Card className="bg-gradient-card shadow-soft">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2">
@@ -251,13 +271,13 @@ const PointOfSale = () => {
               </p>
             ) : (
               <>
-                <div className="space-y-3 max-h-60 overflow-y-auto">
+                <div className="space-y-3">
                   {cart.map((item, index) => (
                     <div key={`${item.id}-${item.size}-${index}`} className="flex items-center gap-3 p-2 rounded-lg bg-muted/20">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">{item.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          Size: {item.size} • ₹{item.price}
+                          {item.size || 'Base'} • ₹{item.price} {item.discount > 0 && <span className="text-destructive font-semibold">(-₹{item.discount})</span>} • {item.taxSlab}% Tax
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -297,11 +317,17 @@ const PointOfSale = () => {
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Subtotal:</span>
+                    <span>Subtotal (Net):</span>
                     <span>₹{subtotal.toFixed(2)}</span>
                   </div>
+                  {totalDiscount > 0 && (
+                      <div className="flex justify-between text-sm text-destructive">
+                        <span>Discounts Given:</span>
+                        <span>-₹{totalDiscount.toFixed(2)}</span>
+                      </div>
+                  )}
                   <div className="flex justify-between text-sm">
-                    <span>GST (18%):</span>
+                    <span>Tax (Combined):</span>
                     <span>₹{tax.toFixed(2)}</span>
                   </div>
                   <Separator />

@@ -44,13 +44,15 @@ export const getCustomer = async (req: Request, res: Response) => {
 
 export const createCustomer = async (req: Request, res: Response) => {
     try {
-        const { name, email, phone, location } = req.body;
+        const { name, email, phone, location, address, gstNumber } = req.body;
         const customer = await prisma.customer.create({
             data: {
                 name,
                 email,
                 phone,
                 location,
+                address: address || null,
+                gstNumber: gstNumber || null,
             },
         });
         res.status(201).json(customer);
@@ -62,7 +64,7 @@ export const createCustomer = async (req: Request, res: Response) => {
 export const updateCustomer = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { name, email, phone, location } = req.body;
+        const { name, email, phone, location, address, gstNumber } = req.body;
         const customer = await prisma.customer.update({
             where: { id: Number(id) },
             data: {
@@ -70,6 +72,8 @@ export const updateCustomer = async (req: Request, res: Response) => {
                 email,
                 phone,
                 location,
+                address: address || null,
+                gstNumber: gstNumber || null,
             },
         });
         res.json(customer);

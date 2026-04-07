@@ -42,13 +42,16 @@ export const getProduct = async (req: Request, res: Response) => {
 
 export const createProduct = async (req: Request, res: Response) => {
     try {
-        const { name, sku, category, price, stock, minStock, sizes } = req.body;
+        const { name, sku, barcode, category, price, discount, taxSlab, stock, minStock, sizes } = req.body;
         const product = await prisma.product.create({
             data: {
                 name,
                 sku,
+                barcode: barcode || null,
                 category,
                 price: Number(price),
+                discount: discount ? Number(discount) : 0,
+                taxSlab: taxSlab ? Number(taxSlab) : null,
                 stock: Number(stock),
                 minStock: Number(minStock) || 5,
                 sizes: sizes || [],
@@ -63,14 +66,17 @@ export const createProduct = async (req: Request, res: Response) => {
 export const updateProduct = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { name, sku, category, price, stock, minStock, sizes } = req.body;
+        const { name, sku, barcode, category, price, discount, taxSlab, stock, minStock, sizes } = req.body;
         const product = await prisma.product.update({
             where: { id: Number(id) },
             data: {
                 name,
                 sku,
+                barcode: barcode || null,
                 category,
                 price: Number(price),
+                discount: discount ? Number(discount) : 0,
+                taxSlab: taxSlab ? Number(taxSlab) : null,
                 stock: Number(stock),
                 minStock: Number(minStock),
                 sizes,

@@ -68,8 +68,8 @@ export const register = async (req: Request, res: Response) => {
             message: 'User created',
             user: { id: user.id, username: user.username }
         });
-    } catch (error: any) {
-        if (error.code === 'P2002') {
+    } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
             res.status(400).json({ error: 'Username already exists' });
         } else {
             res.status(500).json({ error: 'Registration failed' });
@@ -82,8 +82,8 @@ export const logout = (req: Request, res: Response) => {
 };
 
 export const me = (req: Request, res: Response) => {
-    // @ts-ignore
-    const user = req.user;
+    const authReq = req as Request & { user?: any };
+    const user = authReq.user;
     if (user) {
         res.json({ user });
     } else {

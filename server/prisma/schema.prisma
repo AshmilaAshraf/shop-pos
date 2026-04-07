@@ -11,8 +11,11 @@ model Product {
   id          Int      @id @default(autoincrement())
   name        String
   sku         String   @unique
+  barcode     String?  @unique
   category    String
   price       Decimal
+  discount    Decimal  @default(0)
+  taxSlab     Decimal?
   stock       Int
   minStock    Int      @default(5)
   sizes       String[]
@@ -27,6 +30,8 @@ model Customer {
   email       String?  @unique
   phone       String?  @unique
   location    String?
+  address     String?
+  gstNumber   String?
   points      Int      @default(0)
   totalSpent  Decimal  @default(0)
   lastVisit   DateTime @default(now())
@@ -35,16 +40,18 @@ model Customer {
 }
 
 model Sale {
-  id          Int         @id @default(autoincrement())
-  invoiceNo   String      @unique @default(uuid())
-  totalAmount Decimal
-  taxAmount   Decimal
-  subTotal    Decimal
-  paymentMode String      @default("CASH")
-  customer    Customer?   @relation(fields: [customerId], references: [id])
-  customerId  Int?
-  items       SalesItem[]
-  createdAt   DateTime    @default(now())
+  id             Int         @id @default(autoincrement())
+  invoiceNo      String      @unique @default(uuid())
+  totalAmount    Decimal
+  taxAmount      Decimal
+  discountAmount Decimal     @default(0)
+  subTotal       Decimal
+  paymentMode    String      @default("CASH")
+  cashierName    String?
+  customer       Customer?   @relation(fields: [customerId], references: [id])
+  customerId     Int?
+  items          SalesItem[]
+  createdAt      DateTime    @default(now())
 }
 
 model SalesItem {
@@ -64,4 +71,16 @@ model User {
   password  String   // Hashed
   role      String   @default("USER") // ADMIN, USER
   createdAt DateTime @default(now())
+}
+
+model StoreSettings {
+  id              Int      @id @default(autoincrement())
+  storeName       String
+  contactEmail    String
+  address         String?
+  gstNumber       String?
+  receiptFooter   String?
+  currencySymbol  String   @default("₹")
+  taxRate         Decimal  @default(18)
+  updatedAt       DateTime @updatedAt
 }

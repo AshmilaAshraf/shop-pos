@@ -63,6 +63,13 @@ export default function Login() {
                 </CardHeader>
                 <form onSubmit={handleSubmit}>
                     <CardContent className="space-y-4">
+                        <Alert className="bg-primary/10 border-primary/20">
+                            <Info className="h-4 w-4 text-primary" />
+                            <AlertDescription className="text-primary text-sm font-medium">
+                                Portfolio Showcase Demo:<br/>
+                                Username: <strong>user</strong> • Password: <strong>user123</strong>
+                            </AlertDescription>
+                        </Alert>
                         {error && (
                             <Alert variant="destructive">
                                 <AlertDescription>{error}</AlertDescription>

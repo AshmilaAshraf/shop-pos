@@ -35,7 +35,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const AppLayout = () => {
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="h-screen overflow-hidden flex w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col">
           <header className="h-14 flex items-center border-b bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50">

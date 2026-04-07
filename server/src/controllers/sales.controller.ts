@@ -6,23 +6,35 @@ const prisma = new PrismaClient();
 export const createSale = async (req: Request, res: Response) => {
     try {
         const { customerId, items, paymentMode } = req.body;
-        // items: [{ productId, quantity, price, size }]
+        const cashierName = (req as any).user?.name || (req as any).user?.username || 'Admin';
 
-        // simple calculation (in real world, verify prices from DB)
-        let totalAmount = 0;
+        let subTotal = 0;
+        let taxAmount = 0;
+        let totalDiscountAmount = 0;
+
         const salesItemsData = items.map((item: any) => {
-            const lineTotal = item.price * item.quantity;
-            totalAmount += lineTotal;
+            const price = Number(item.price);
+            const discount = Number(item.discount || 0);
+            const taxSlab = Number(item.taxSlab || 0);
+            const quantity = Number(item.quantity);
+
+            const grossLineTotal = price * quantity;
+            const lineDiscount = discount * quantity;
+            const netLineTotal = grossLineTotal - lineDiscount;
+            const lineTax = (netLineTotal * taxSlab) / 100;
+
+            subTotal += netLineTotal;
+            taxAmount += lineTax;
+            totalDiscountAmount += lineDiscount;
+
             return {
                 productId: item.productId,
-                quantity: item.quantity,
-                price: item.price,
+                quantity: quantity,
+                price: price,
                 size: item.size
             };
         });
 
-        const taxAmount = totalAmount * 0.18;
-        const subTotal = totalAmount;
         const finalTotal = subTotal + taxAmount;
 
         // Transaction: Create Sale, Create SalesItems, Update Product Stock, Update Customer Stats
@@ -34,6 +46,8 @@ export const createSale = async (req: Request, res: Response) => {
                     subTotal,
                     taxAmount,
                     totalAmount: finalTotal,
+                    discountAmount: totalDiscountAmount,
+                    cashierName,
                     paymentMode: paymentMode || 'CASH',
                     items: {
                         create: salesItemsData

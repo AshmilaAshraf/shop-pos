@@ -113,4 +113,15 @@ export const api = {
 
     // Dashboard
     getDashboardStats: () => fetchWithAuth(`${API_URL}/dashboard/stats`),
+
+    // Reports
+    getReports: () => fetchWithAuth(`${API_URL}/reports`),
+
+    // Settings
+    getSettings: () => fetchWithAuth(`${API_URL}/settings`),
+    updateSettings: (data: any) =>
+        fetchWithAuth(`${API_URL}/settings`, {
+            method: "POST",
+            body: JSON.stringify(data),
+        }),
 };

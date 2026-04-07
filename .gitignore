@@ -1,6 +1,6 @@
-﻿node_modules/
+node_modules/
 .env
 dist/
 *.pem
-bun.lockb
-server/keys/
+private.pem
+public.pem
